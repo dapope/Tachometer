@@ -749,10 +749,10 @@ module powerbi.extensibility.visual {
             //   2. The viewport width is big enough for a target
             this.showTargetLabel = isFinite(axisData.target.value)
                 && axisData.target.show
-                && (maxRenderWidth > Tachometer.MinWidthForTargetLabel)
-                && (maxRenderWidth > axisData.target.textWidth * Tachometer.TargetLabelPruningLimit.width)
-                && (maxRenderHeight > Tachometer.MinHeightForTargetLabel)
-                && (maxRenderHeight > axisData.target.textHeight * Tachometer.TargetLabelPruningLimit.height)
+                //&& (maxRenderWidth > Tachometer.MinWidthForTargetLabel)
+                //&& (maxRenderWidth > axisData.target.textWidth * Tachometer.TargetLabelPruningLimit.width)
+                //&& (maxRenderHeight > Tachometer.MinHeightForTargetLabel)
+                //&& (maxRenderHeight > axisData.target.textHeight * Tachometer.TargetLabelPruningLimit.height)
                 && showLabels;
 
             // Only show the callout Value label if:
