@@ -738,10 +738,10 @@ module powerbi.extensibility.visual {
             //   1. There is a target
             //   2. The viewport width is big enough for a target
             this.showAxisLabels = axisData.dataLabels.show
-                && (maxRenderWidth > Tachometer.MinWidthForAxisLabel)
-                && (maxRenderWidth > axisData.dataLabels.textWidth * Tachometer.AxisLabelPruningLimit.width)
-                && (maxRenderHeight > Tachometer.MinHeightForAxisLabel)
-                && (maxRenderHeight > axisData.dataLabels.textHeight * Tachometer.AxisLabelPruningLimit.height)
+                //&& (maxRenderWidth > Tachometer.MinWidthForAxisLabel)
+                //&& (maxRenderWidth > axisData.dataLabels.textWidth * Tachometer.AxisLabelPruningLimit.width)
+                //&& (maxRenderHeight > Tachometer.MinHeightForAxisLabel)
+                //&& (maxRenderHeight > axisData.dataLabels.textHeight * Tachometer.AxisLabelPruningLimit.height)
                 && showLabels;
 
             // Only show the target label if:calloutValue.show
@@ -825,7 +825,7 @@ module powerbi.extensibility.visual {
             //Remove axis labels and recalculate gauge translation if radius is too small
             var radius = translation.radius;
             if (this.showAxisLabels && (radius < Math.max(margins.labelMargin.top, margins.labelMargin.bottom))) {
-                this.showAxisLabels = false;
+                //this.showAxisLabels = false;
                 margins = this.defineMargins(axisData);
                 var availableHeight = this.getAvailebleHeight(viewport, margins, calloutValueSpace, calloutPercentSpace);
 
@@ -860,7 +860,7 @@ module powerbi.extensibility.visual {
                 var availableHeight = this.getAvailebleHeight(viewport, margins, calloutValueSpace, calloutPercentSpace);
 
                 if (availableHeight < 0) {
-                    this.showAxisLabels = this.showTargetLabel = this.showCalloutValue = this.showCalloutPercent = false;
+                    //this.showAxisLabels = this.showTargetLabel = this.showCalloutValue = this.showCalloutPercent = false;
                     calloutValueSpace = calloutPercentSpace = 0;
                     margins = this.defineMargins(axisData);
                     availableHeight = Math.max(this.getAvailebleHeight(viewport, margins, calloutValueSpace, calloutPercentSpace), 0);
@@ -2563,7 +2563,7 @@ module powerbi.extensibility.visual {
                 var textHeight = PixelConverter.fromPointToPixel(dataLabels.fontSize);
 
                 var lastAngle: number = Tachometer.UninitializedStartValue; // initialize to a very small number
-                var reduce = dataLabels.reduce;
+                var reduce = false; //dataLabels.reduce;
                 var lastDisplayValue = '';
                 var lastAxisLabel: TachometerAxisLabel;
                 for (var i = 0; i < ticCount; i++) {
@@ -2577,7 +2577,7 @@ module powerbi.extensibility.visual {
                         var axisLabel: TachometerAxisLabel = this.createAxisLabel(currentDisplayValue, value, fontSizePx, textHeight, angle);
 
                         if (this.isWithinBounds(axisLabel.rect)
-                            && (!lastAxisLabel || (lastAxisLabel && !this.isOverlapping(lastAxisLabel.rect, axisLabel.rect)))
+                            //&& (!lastAxisLabel || (lastAxisLabel && !this.isOverlapping(lastAxisLabel.rect, axisLabel.rect)))
                             && !this.isOverlappingWithCallout(axisLabel.rect)
                         ) {
                             axisLabels.push(axisLabel);
