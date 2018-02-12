@@ -744,7 +744,7 @@ module powerbi.extensibility.visual {
                 && (maxRenderHeight > axisData.dataLabels.textHeight * Tachometer.AxisLabelPruningLimit.height)
                 && showLabels;
 
-            // Only show the target label if:
+            // Only show the target label if:calloutValue.show
             //   1. There is a target
             //   2. The viewport width is big enough for a target
             this.showTargetLabel = isFinite(axisData.target.value)
@@ -760,10 +760,10 @@ module powerbi.extensibility.visual {
             //   2. The viewport width is big enough for callout
             this.showCalloutValue = calloutValue
                 && calloutValue.show
-                && (maxRenderWidth > Tachometer.MinWidthForCalloutLabel)
-                && (maxRenderWidth > calloutValue.textWidth * Tachometer.CalloutPruningLimit.width)
-                && (maxRenderHeight > Tachometer.MinHeightForCalloutLabel)
-                && (maxRenderHeight > calloutValue.textHeight * Tachometer.CalloutPruningLimit.height)
+                //&& (maxRenderWidth > Tachometer.MinWidthForCalloutLabel)
+                //&& (maxRenderWidth > calloutValue.textWidth * Tachometer.CalloutPruningLimit.width)
+                //&& (maxRenderHeight > Tachometer.MinHeightForCalloutLabel)
+                //&& (maxRenderHeight > calloutValue.textHeight * Tachometer.CalloutPruningLimit.height)
                 && showLabels;
 
             // Only show the callout Percent label if:
@@ -771,10 +771,10 @@ module powerbi.extensibility.visual {
             //   2. The viewport width is big enough for callout percent
             this.showCalloutPercent = calloutPercent
                 && calloutPercent.show
-                && (maxRenderWidth > Tachometer.MinWidthForCalloutPercentLabel)
-                && (maxRenderWidth > calloutPercent.textWidth * Tachometer.CalloutPruningLimit.width)
-                && (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0) > Tachometer.MinHeightForCalloutPercentLabel )
-                && (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0)> calloutPercent.textHeight * Tachometer.CalloutPruningLimit.height)
+                //&& (maxRenderWidth > Tachometer.MinWidthForCalloutPercentLabel)
+                //&& (maxRenderWidth > calloutPercent.textWidth * Tachometer.CalloutPruningLimit.width)
+                //&& (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0) > Tachometer.MinHeightForCalloutPercentLabel )
+                //&& (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0)> calloutPercent.textHeight * Tachometer.CalloutPruningLimit.height)
                 && showLabels;
 
             axisData.dataLabels.formatter = this.getWiderFormatter(axisData.dataLabels, axisData.startValue, axisData.endValue);
