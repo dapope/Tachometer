@@ -88,6 +88,7 @@ module powerbi.extensibility.visual {
         availableWidth: number;
         axis: TachometerAxisData;
         callout: TachometerCalloutSettings;
+        displayOptions: TachometerDisplayOptionsObject;
     }
 
     export interface TachometerIndicatorData {
@@ -133,6 +134,10 @@ module powerbi.extensibility.visual {
         yOffset?: number;
         invert?: boolean;
         percentType: percentType; //Where percent value is measured against
+    }
+
+    export interface TachometerDisplayOptionsObject extends DataViewObject {
+        alwaysShowLabels: boolean;
     }
 
     export interface TachometerAxisData extends TooltipEnabledDataPoint {
@@ -443,6 +448,7 @@ module powerbi.extensibility.visual {
         private targetRectangle: TachometerRectangle;
         private gaugeStyle: TachometerStyle;
         private axisData: TachometerAxisData;
+        private displayOptions: TachometerDisplayOptionsObject;
         private axisLabels: TachometerAxisLabel[];
         private tachometerSmallViewPortProperties: TachometerSmallViewPortProperties;
         private showAxisLabels: boolean = false;
@@ -539,8 +545,7 @@ module powerbi.extensibility.visual {
             this.calloutPercent = overlayGraphicsContext.append('text').classed('calloutPercent', true);
 
         }
-
-
+      
         public update(options: VisualUpdateOptions) {
             if (!options || !options.dataViews || !options.dataViews[0]) {
                 return;
@@ -696,6 +701,15 @@ module powerbi.extensibility.visual {
             this.metadataColumn = Tachometer.getMetaDataColumn(dataView);
             this.transformMarginSettings(dataView);
             var axisData: TachometerAxisData = this.transformTachometerData(dataView);
+            var asl: boolean = false;
+
+            if (dataView.metadata !== undefined
+              && dataView.metadata.objects !== undefined
+              && dataView.metadata.objects["displayOptions"] !== undefined
+              && dataView.metadata.objects["displayOptions"].alwaysShowLabels !== undefined
+            ) {
+                asl = dataView.metadata.objects["displayOptions"].alwaysShowLabels as boolean;
+            }
 
             return {
                 axis: axisData,
@@ -708,7 +722,8 @@ module powerbi.extensibility.visual {
                 availableHeight: 0,
                 availableWidth: 0,
                 viewportHeight: 0,
-                viewportWidth: 0
+                viewportWidth: 0,
+                displayOptions: { alwaysShowLabels: asl, }
             };
         }
 
@@ -727,55 +742,73 @@ module powerbi.extensibility.visual {
             this.axisData = axisData;
             this.setAxisScale(axisData);
 
+            this.displayOptions = viewModel.displayOptions;
+
             var callout: TachometerCalloutSettings = viewModel.callout;
             var calloutValue = callout ? callout.calloutValue : undefined;
             var calloutPercent = callout ? callout.calloutPercent : undefined;
             this.setCalloutPercentValue(calloutPercent, axisData);
             this.completeTargetTextProperties(axisData);
             var showLabels = this.showLabelText();
+            var alwaysShowLabels = viewModel.displayOptions.alwaysShowLabels;
+
 
             // Only show the target label if:
             //   1. There is a target
             //   2. The viewport width is big enough for a target
-            this.showAxisLabels = axisData.dataLabels.show
-                //&& (maxRenderWidth > Tachometer.MinWidthForAxisLabel)
-                //&& (maxRenderWidth > axisData.dataLabels.textWidth * Tachometer.AxisLabelPruningLimit.width)
-                //&& (maxRenderHeight > Tachometer.MinHeightForAxisLabel)
-                //&& (maxRenderHeight > axisData.dataLabels.textHeight * Tachometer.AxisLabelPruningLimit.height)
-                && showLabels;
+            this.showAxisLabels = axisData.dataLabels.show && showLabels;
+
+            if (this.showAxisLabels) {
+              this.showAxisLabels = alwaysShowLabels || ((maxRenderWidth > Tachometer.MinWidthForAxisLabel)
+                && (maxRenderWidth > axisData.dataLabels.textWidth * Tachometer.AxisLabelPruningLimit.width)
+                && (maxRenderHeight > Tachometer.MinHeightForAxisLabel)
+                && (maxRenderHeight > axisData.dataLabels.textHeight * Tachometer.AxisLabelPruningLimit.height))
+            }
 
             // Only show the target label if:calloutValue.show
             //   1. There is a target
             //   2. The viewport width is big enough for a target
-            this.showTargetLabel = isFinite(axisData.target.value)
-                && axisData.target.show
-                //&& (maxRenderWidth > Tachometer.MinWidthForTargetLabel)
-                //&& (maxRenderWidth > axisData.target.textWidth * Tachometer.TargetLabelPruningLimit.width)
-                //&& (maxRenderHeight > Tachometer.MinHeightForTargetLabel)
-                //&& (maxRenderHeight > axisData.target.textHeight * Tachometer.TargetLabelPruningLimit.height)
-                && showLabels;
+            this.showTargetLabel = isFinite(axisData.target.value) && axisData.target.show && showLabels;
+
+            if (this.showTargetLabel) {
+              this.showTargetLabel = alwaysShowLabels || ((maxRenderWidth > Tachometer.MinWidthForTargetLabel)
+                && (maxRenderWidth > axisData.target.textWidth * Tachometer.TargetLabelPruningLimit.width)
+                && (maxRenderHeight > Tachometer.MinHeightForTargetLabel)
+                && (maxRenderHeight > axisData.target.textHeight * Tachometer.TargetLabelPruningLimit.height))
+            }
 
             // Only show the callout Value label if:
             //   1. There is a callout Value
             //   2. The viewport width is big enough for callout
             this.showCalloutValue = calloutValue
                 && calloutValue.show
-                //&& (maxRenderWidth > Tachometer.MinWidthForCalloutLabel)
-                //&& (maxRenderWidth > calloutValue.textWidth * Tachometer.CalloutPruningLimit.width)
-                //&& (maxRenderHeight > Tachometer.MinHeightForCalloutLabel)
-                //&& (maxRenderHeight > calloutValue.textHeight * Tachometer.CalloutPruningLimit.height)
                 && showLabels;
+
+            if (this.showCalloutValue) {
+                this.showCalloutValue = alwaysShowLabels
+                  || (
+                  (maxRenderWidth > Tachometer.MinWidthForCalloutLabel)
+                  && (maxRenderWidth > calloutValue.textWidth * Tachometer.CalloutPruningLimit.width)
+                  && (maxRenderHeight > Tachometer.MinHeightForCalloutLabel)
+                  && (maxRenderHeight > calloutValue.textHeight * Tachometer.CalloutPruningLimit.height));
+            }
+
 
             // Only show the callout Percent label if:
             //   1. There is a callout Percent
             //   2. The viewport width is big enough for callout percent
             this.showCalloutPercent = calloutPercent
                 && calloutPercent.show
-                //&& (maxRenderWidth > Tachometer.MinWidthForCalloutPercentLabel)
-                //&& (maxRenderWidth > calloutPercent.textWidth * Tachometer.CalloutPruningLimit.width)
-                //&& (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0) > Tachometer.MinHeightForCalloutPercentLabel )
-                //&& (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0)> calloutPercent.textHeight * Tachometer.CalloutPruningLimit.height)
-                && showLabels;
+              && showLabels;
+          
+            if (this.showCalloutPercent) {
+                this.showCalloutPercent = alwaysShowLabels
+                || (
+                 (maxRenderWidth > Tachometer.MinWidthForCalloutPercentLabel)
+                && (maxRenderWidth > calloutPercent.textWidth * Tachometer.CalloutPruningLimit.width)
+                && (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0) > Tachometer.MinHeightForCalloutPercentLabel )
+                && (maxRenderHeight - (this.showCalloutValue ? calloutPercent.textHeight: 0)> calloutPercent.textHeight * Tachometer.CalloutPruningLimit.height))
+            }
 
             axisData.dataLabels.formatter = this.getWiderFormatter(axisData.dataLabels, axisData.startValue, axisData.endValue);
             var margins: Margins = this.defineMargins(axisData);
@@ -825,7 +858,10 @@ module powerbi.extensibility.visual {
             //Remove axis labels and recalculate gauge translation if radius is too small
             var radius = translation.radius;
             if (this.showAxisLabels && (radius < Math.max(margins.labelMargin.top, margins.labelMargin.bottom))) {
-                //this.showAxisLabels = false;
+                if (!alwaysShowLabels) {
+                    this.showAxisLabels = false;
+                }
+
                 margins = this.defineMargins(axisData);
                 var availableHeight = this.getAvailebleHeight(viewport, margins, calloutValueSpace, calloutPercentSpace);
 
@@ -854,13 +890,17 @@ module powerbi.extensibility.visual {
 
             //Remove target label and recalculate gauge translation if radius is too small
             if (this.showTargetLabel && (radius < Math.max(margins.labelMargin.top, margins.labelMargin.bottom))) {
-                this.showTargetLabel = false;
+                if (!alwaysShowLabels) {
+                    this.showTargetLabel = false;
+                }
 
                 margins = this.defineMargins(axisData);
                 var availableHeight = this.getAvailebleHeight(viewport, margins, calloutValueSpace, calloutPercentSpace);
 
                 if (availableHeight < 0) {
-                    //this.showAxisLabels = this.showTargetLabel = this.showCalloutValue = this.showCalloutPercent = false;
+                    if (!alwaysShowLabels) {
+                        this.showAxisLabels = this.showTargetLabel = this.showCalloutValue = this.showCalloutPercent = false;
+                    }
                     calloutValueSpace = calloutPercentSpace = 0;
                     margins = this.defineMargins(axisData);
                     availableHeight = Math.max(this.getAvailebleHeight(viewport, margins, calloutValueSpace, calloutPercentSpace), 0);
@@ -2563,7 +2603,12 @@ module powerbi.extensibility.visual {
                 var textHeight = PixelConverter.fromPointToPixel(dataLabels.fontSize);
 
                 var lastAngle: number = Tachometer.UninitializedStartValue; // initialize to a very small number
-                var reduce = false; //dataLabels.reduce;
+                var reduce = dataLabels.reduce;
+
+                if (this.displayOptions.alwaysShowLabels) {
+                    reduce = false;
+                }
+
                 var lastDisplayValue = '';
                 var lastAxisLabel: TachometerAxisLabel;
                 for (var i = 0; i < ticCount; i++) {
@@ -2576,15 +2621,29 @@ module powerbi.extensibility.visual {
                     {
                         var axisLabel: TachometerAxisLabel = this.createAxisLabel(currentDisplayValue, value, fontSizePx, textHeight, angle);
 
-                        if (this.isWithinBounds(axisLabel.rect)
-                            //&& (!lastAxisLabel || (lastAxisLabel && !this.isOverlapping(lastAxisLabel.rect, axisLabel.rect)))
-                            && !this.isOverlappingWithCallout(axisLabel.rect)
-                        ) {
-                            axisLabels.push(axisLabel);
-                            lastAngle = angle;
-                            lastDisplayValue = currentDisplayValue;
-                            lastAxisLabel = axisLabel;
+                        if (this.displayOptions.alwaysShowLabels) {
+
+                            if (this.isWithinBounds(axisLabel.rect)
+                              && !this.isOverlappingWithCallout(axisLabel.rect)
+                            ) {
+                              axisLabels.push(axisLabel);
+                              lastAngle = angle;
+                              lastDisplayValue = currentDisplayValue;
+                              lastAxisLabel = axisLabel;
+                            }
+                        } else {
+
+                            if (this.isWithinBounds(axisLabel.rect)
+                              && (!lastAxisLabel || (lastAxisLabel && !this.isOverlapping(lastAxisLabel.rect, axisLabel.rect)))
+                              && !this.isOverlappingWithCallout(axisLabel.rect)
+                            ) {
+                              axisLabels.push(axisLabel);
+                              lastAngle = angle;
+                              lastDisplayValue = currentDisplayValue;
+                              lastAxisLabel = axisLabel;
+                            }
                         }
+                        
                     }
                 }
             }
@@ -3724,6 +3783,9 @@ module powerbi.extensibility.visual {
                 case 'indicator':
                     this.enumerateIndicator(enumeration);
                     break;
+                case 'displayOptions':
+                    this.enumerateDisplayOptions(enumeration);
+                    break;
                 case 'labels':
                     this.enumerateDataLabels(enumeration, 'labels');
                     break;
@@ -3824,6 +3886,25 @@ module powerbi.extensibility.visual {
             });
         }
 
+
+        private enumerateDisplayOptions(enumeration: VisualObjectInstance[]): void {
+          var dataView = this.dataView;
+          var properties: any = {};
+
+          var objects: DataViewObjects = this.dataView && this.dataView.metadata ? this.dataView.metadata.objects : null;
+          var displayOptionsObj: TachometerDisplayOptionsObject = objects ? <TachometerDisplayOptionsObject>objects['displayOptions'] : null;
+          var hasObject: boolean = (displayOptionsObj != null);
+
+          properties.alwaysShowLabels = hasObject ? displayOptionsObj.alwaysShowLabels : false;
+
+          enumeration.push({
+            selector: null,
+            objectName: 'displayOptions',
+            displayName: 'Display Options',
+            properties: <any>properties,
+          });
+        }
+
         private enumerateDataLabels(enumeration: VisualObjectInstance[], objectName: string): void {
 
             var labelSettings = this.viewModel && this.axisData.dataLabels ? this.axisData.dataLabels : Tachometer.getDefaultTachometerLabelSettings();
@@ -3867,6 +3948,7 @@ module powerbi.extensibility.visual {
 
             enumeration.push(instance);
         }
+
 
         private enumerateCalloutProperties(enumeration: VisualObjectInstance[], objectName: string, displayName: string, labelSettings: TachometerDataLabelsData): void {
             var instance: VisualObjectInstance = {

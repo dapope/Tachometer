@@ -177,33 +177,43 @@
                         }
                     }
                 },
-                "indicator": {
-                    "displayName": "Indicator",
-                    "properties": {
-                        "pointerColor": {
-                            "displayName": "Needle Color",
-                            "description": "Color of the needle",
-                            "type": { "fill": { "solid": { "color": true } } }
-                        },
-                        "pointerSizeFactor": {
-                            "displayName": "Needle Size",
-                            "description": "Distance to needle tip as percentage of gauge radius",
-                            "placeHolderText": "70%",
-                            "type": { "numeric": true }
-                        },
-                        "baseColor": {
-                            "displayName": "Base Color",
-                            "description": "Color of indicator base arc",
-                            "type": { "fill": { "solid": { "color": true } } }
-                        },
-                        "baseThicknessFactor": {
-                            "displayName": "Base Thickness",
-                            "description": "Thickness of indicator base as percentage of its radius",
-                            "placeHolderText": "30%",
-                            "type": { "numeric": true }
-                        }
-                    }
-                },
+              "indicator": {
+                "displayName": "Indicator",
+                "properties": {
+                  "pointerColor": {
+                    "displayName": "Needle Color",
+                    "description": "Color of the needle",
+                    "type": { "fill": { "solid": { "color": true } } }
+                  },
+                  "pointerSizeFactor": {
+                    "displayName": "Needle Size",
+                    "description": "Distance to needle tip as percentage of gauge radius",
+                    "placeHolderText": "70%",
+                    "type": { "numeric": true }
+                  },
+                  "baseColor": {
+                    "displayName": "Base Color",
+                    "description": "Color of indicator base arc",
+                    "type": { "fill": { "solid": { "color": true } } }
+                  },
+                  "baseThicknessFactor": {
+                    "displayName": "Base Thickness",
+                    "description": "Thickness of indicator base as percentage of its radius",
+                    "placeHolderText": "30%",
+                    "type": { "numeric": true }
+                  }
+                }
+              },
+              "displayOptions": {
+                "displayName": "Display Options",
+                "properties": {
+                  "alwaysShowLabels": {
+                    "displayName": "Keep Labels",
+                    "type": { "bool": true }
+                  }
+                }
+              },
+
                 "labels": {
                     "displayName": "Axis Labels",
                     "properties": {
